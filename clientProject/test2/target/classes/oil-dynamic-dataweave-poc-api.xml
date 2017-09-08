@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:hl7="http://www.mulesoft.org/schema/mule/hl7" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/hl7 http://www.mulesoft.org/schema/mule/hl7/current/mule-hl7.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/mulerequester http://www.mulesoft.org/schema/mule/mulerequester/current/mule-mulerequester.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+
+	<http:listener-config name="HTTP_Listener_Configuration2" host="0.0.0.0" port="9081" doc:name="HTTP Listener Configuration"/>
+	
+	<file:connector name="File" doc:name="connector" autoDelete="false" streaming="true" validateConnections="true"/>
+    <http:request-config name="HTTP_Request_Configuration" host="localhost" port="8081" doc:name="HTTP Request Configuration" responseTimeout="30000"/>
+    
+    <flow name="external-dwl-fileFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration2" path="/run" doc:name="HTTP"/>
+        <set-variable variableName="Option" value="#[message.inboundProperties.'http.query.params'.transformation]" doc:name="Variable"/>
+        <logger message="#[flowVars.Option]" level="INFO" doc:name="Logger"/>
+        <parse-template location="./input.json" metadata:id="79935933-3768-4b3f-98c5-a930b24deb2f" doc:name="Parse Template"/>
+        <choice doc:name="Choice">
+            <when expression="#[flowVars.Option=='xml']">
+                <enricher target="#[flowVars.dwScript]" doc:name="Message Enricher">
+                    <flow-ref name="getDWLFile" doc:name="getDWLFile"/>
+                </enricher>
+                <set-variable variableName="Option" value="application/xml" doc:name="Variable"/>
+            </when>
+            <otherwise>
+                <enricher target="#[flowVars.dwScript]" doc:name="Message Enricher">
+                    <flow-ref name="getCSVDWLFile" doc:name="getCSVDWLFile"/>
+                </enricher>
+                <set-variable variableName="Option" value="application/csv" doc:name="Variable"/>
+            </otherwise>
+        </choice>
+        
+         <set-property propertyName="Content-Type" value="application/json" mimeType="application/json" doc:name="Property"/> 
+        <set-payload value="#[dw(flowVars.dwScript,flowVars.Option)]" doc:name="Apply dw() Function"/>
+        <logger message="#[flowVars.dwScript]" level="INFO" doc:name="Logger"/>
+        <logger message="#[flowVars.Option]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="getDWLFile">
+        <http:request config-ref="HTTP_Request_Configuration" path="/oil-mock-api/transformation/bookXML.dwl" method="GET" doc:name="HTTP"/>
+        <byte-array-to-string-transformer doc:name="Byte Array to String"/>
+    </flow>
+    <flow name="getCSVDWLFile">
+        <http:request config-ref="HTTP_Request_Configuration" path="/oil-mock-api/transformation/bookCSV.dwl" method="GET" doc:name="HTTP"/>
+        <byte-array-to-string-transformer doc:name="Byte Array to String"/>
+    </flow>
+
+</mule>
