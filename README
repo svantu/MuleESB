@@ -1,0 +1,33 @@
+This project is about doing dynamic data weave.
+Here we do transformation from input.json which is in JSON format to required output format. It could be either XML or CSV format.
+
+The client project is in test2 folder and when run in AnyPoint, one needs to run both Client and server together from run Configuration.
+The client runs at 
+	http://localhost:9081/run?transformation=csv or
+	http://localhost:9081/run?transformation=xml
+	
+For testing server use below URLs :
+
+http://localhost:8081/oil-mock-api/transformation/bookXML.dwl
+
+http://localhost:8081/oil-mock-api/transformation/bookCSV.dwl
+
+
+Step 1: Create the server project, give it any name. From the git project, copy the file transformation-config.xml in the AnyPoint Studio
+Right Click on the project -> Mule -> Convert to AnyPoint project. 
+You should see rest of the folders and files getting created in the project.
+
+Now open the transformation-config.xml in Mule Properties , click on HTTP, click on + icon in the properties tab.
+Give it a defult name like HTTP_Listener_configuration, now click on the next to +, here you leave the post as 8081 default and edit the Base Path to /oil-mock-api.
+Now you are good to run the server and test it with above server URLs.
+
+
+
+Similarly create the client project and clientProject folder and cnfigure HTTP_Listener_Configuration port to 9081 and define path to /run
+
+Run both server and client projects as run config' : select both check boxes. Now test the client and server by using the client URLs
+
+http://localhost:9081/run?transformation=csv or
+	http://localhost:9081/run?transformation=xml
+	
+	
