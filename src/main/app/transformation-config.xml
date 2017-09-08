@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:mulerequester="http://www.mulesoft.org/schema/mule/mulerequester" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/mulerequester http://www.mulesoft.org/schema/mule/mulerequester/current/mule-mulerequester.xsd">
+
+
+
+    <flow name="transformation-configFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/transformation/*" allowedMethods="GET" doc:name="HTTP"/>
+        <logger message="#[message.inboundProperties.'http.request.path']" level="INFO" doc:name="Logger"/>
+         <http:static-resource-handler resourceBase="${app.home}/classes/input" defaultFile="bookCSV.dwl" doc:name="HTTP Static Resource Handler"/>
+        <response>
+            <logger level="INFO" doc:name="Logger"/>
+        </response>
+     </flow> 
+
+</mule>
